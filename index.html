@@ -2,79 +2,88 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>XFORCE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XFORCE GYM</title>
 <style>
-*{box-sizing:border-box;font-family:Arial}
-body{background:#000;color:#fff;margin:0;padding:15px}
-.logo{text-align:center;font-size:58px;font-weight:900;line-height:1}
-.logo span:first-child{color:#ff6a00;text-shadow:0 0 15px #ff6a00,0 0 35px #ff6a00}
-.logo span:last-child{color:#000;-webkit-text-stroke:2px #ff6a00;text-shadow:0 0 20px #ff6a00}
-.sub{text-align:center;color:#ff6a00;letter-spacing:5px;font-size:12px;margin:5px 0 20px}
-.card{background:#111;border:1px solid #ff6a00;border-radius:16px;padding:15px;margin-bottom:15px}
-input{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#1a1a1a;color:#fff;margin:5px 0;font-size:16px}
-button{border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;font-size:14px}
-.btn-orange{background:#ff6a00;color:#000;width:100%}
-.btn-dark{background:#222;color:#ff6a00;border:1px solid #ff6a00;width:100%}
-.btn-small{padding:8px 10px;font-size:13px}
-.member{background:#0d0d0d;border:1px solid #ff6a00aa;border-radius:16px;padding:14px;margin-bottom:12px}
-.member h3{margin:0 0 8px;font-size:20px}
-.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px}
-.active{background:#ff6a00;color:#000}
-.ended{background:#333;color:#aaa}
-.row{display:flex;gap:8px;margin-top:10px}
-.row button{flex:1}
-.info{display:flex;justify-content:space-between;margin:6px 0}
-.info b{color:#ff6a00;font-size:18px}
+body{background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:15px}
+h1{color:#ff6a00;font-size:42px;margin:5px}
+.card{background:#111;border:1px solid #333;border-radius:15px;padding:15px;margin:12px 0}
+input{width:92%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #333;background:#222;color:#fff;font-size:16px}
+button{width:100%;padding:13px;border:0;border-radius:10px;background:#ff6a00;color:#fff;font-size:17px;font-weight:bold;margin:6px 0}
+button.gray{background:#333}
+.member{background:#1a1a1a;border-radius:10px;padding:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
+#status{color:#ffb400;font-size:14px}
 </style>
 </head>
 <body>
-<div class="logo"><span>X</span><span>FORCE</span></div>
-<div class="sub">GYM • MEMBERSHIP • APP</div>
+<h1>XFORCE</h1><div>GYM • MEMBERSHIP • APP</div>
 <div class="card">
-<b>إضافة مشترك جديد</b> <span id="total" style="color:#ff6a00">0 مشترك</span>
+<div id="count">0 مشترك</div>
 <input id="name" placeholder="اسم المشترك">
-<input id="balance" type="number" placeholder="الرصيد بالدولار $">
-<button class="btn-orange" onclick="addMember()">+ إضافة مشترك - 30 يوم</button>
-<div id="cloudStatus" style="font-size:13px;margin-top:8px;color:#aaa">☁️ جاري الاتصال...</div>
+<input id="money" type="number" placeholder="الرصيد بالدولار $">
+<button onclick="addMember()">+ إضافة مشترك - 30 يوم</button>
+<div id="status">وضع محلي - جاهز ✅</div>
 </div>
 <div id="list"></div>
 <div class="card">
-<b style="color:#ff6a00">☁️ ربط السحابة</b>
-<input id="token" type="password" placeholder="الصق التوكن هنا">
-<button class="btn-orange" onclick="saveToken()">حفظ و اتصال</button>
+<b>☁️ ربط السحابة (اختياري)</b>
+<input id="token" placeholder="الصق التوكن هنا" type="password">
+<button onclick="saveToken()">حفظ و اتصال</button>
+<button class="gray" onclick="clearToken()">حذف التوكن</button>
+<button class="gray" onclick="exportData()">📥 تصدير نسخة احتياطية</button>
+<input type="file" id="fileInput" style="display:none" onchange="importData(event)">
+<button class="gray" onclick="document.getElementById('fileInput').click()">📤 استيراد نسخة احتياطية</button>
 </div>
 <script>
 let members = JSON.parse(localStorage.getItem('xforce_members')||'[]');
 let token = localStorage.getItem('xforce_token')||'';
 document.getElementById('token').value = token;
-const OWNER='anoorhlby-coder', REPO='XFORCE', FILE='data.json';
-function daysLeft(m){
-if(m.status==='cancelled') return 'ملغي';
-let diff=Math.ceil((new Date(m.endDate)-new Date())/(1000*60*60*24));
-return diff<0?0:diff;
-}
-function saveLocal(){ localStorage.setItem('xforce_members', JSON.stringify(members)); render(); }
-async function syncToCloud(){
-if(!token) return;
-try{
-let get=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`,{headers:{Authorization:'Bearer '+token}});
-let sha=null; if(get.ok){ let j=await get.json(); sha=j.sha; }
-await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`,{method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message:'update',content:btoa(unescape(encodeURIComponent(JSON.stringify(members)))),sha})});
-document.getElementById('cloudStatus').innerHTML='✅ تم الحفظ بالسحابة | '+members.length+' مشترك';
-}catch(e){}
-}
-async function loadFromCloud(){
-if(!token){ render(); return; }
-try{
-let r=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`,{headers:{Authorization:'Bearer '+token}});
-if(r.ok){ let j=await r.json(); let data=JSON.parse(decodeURIComponent(escape(atob(j.content)))); if(Array.isArray(data)&&data.length){ members=data; localStorage.setItem('xforce_members',JSON.stringify(members)); } }
-document.getElementById('cloudStatus').innerHTML='✅ تم الاتصال بالسحابة | '+members.length+' مشترك';
-}catch(e){}
-render();
+function saveLocal(){ localStorage.setItem('xforce_members', JSON.stringify(members)); }
+function render(){
+  document.getElementById('count').textContent = members.length + ' مشترك';
+  document.getElementById('list').innerHTML = members.map((m,i)=>`<div class="member"><span><b>${m.name}</b><br>💰 ${m.money}$ - ينتهي ${m.end}</span><button style="width:auto;background:#c00" onclick="delMember(${i})">حذف</button></div>`).join('') || '<p>لا يوجد مشتركين</p>';
 }
 function addMember(){
-let n=document.getElementById('name').value.trim();
-let b=parseFloat(document.getElementById('balance').value)||0;
-if(!n) return alert('اكتب الاسم');
-let start=new Date
+  let n=document.getElementById('name').value.trim();
+  let mo=document.getElementById('money').value||0;
+  if(!n){alert('اكتب الاسم');return;}
+  let d=new Date(); d.setDate(d.getDate()+30);
+  members.push({name:n, money:mo, end:d.toISOString().slice(0,10)});
+  saveLocal(); render(); syncCloud();
+  document.getElementById('name').value=''; document.getElementById('money').value='';
+}
+function delMember(i){ if(confirm('حذف؟')){ members.splice(i,1); saveLocal(); render(); syncCloud(); } }
+function setStatus(t){ document.getElementById('status').textContent=t; }
+function saveToken(){
+  token=document.getElementById('token').value.trim();
+  localStorage.setItem('xforce_token', token);
+  setStatus('تم حفظ التوكن ✅ - جاري تجربة الاتصال...');
+  // لا ننتظر السحابة، الواجهة تضل شغالة
+  syncCloud();
+  setTimeout(()=>{ if(document.getElementById('status').textContent.includes('جاري')) setStatus('تم الحفظ محلياً ✅ - السحابة اختيارية'); },3000);
+}
+function clearToken(){
+  token=''; localStorage.removeItem('xforce_token');
+  document.getElementById('token').value='';
+  setStatus('تم حذف التوكن ✅ - وضع محلي');
+}
+async function syncCloud(){
+  if(!token) return;
+  setStatus('☁️ جاري المزامنة...');
+  try{
+    let c=new AbortController(); setTimeout(()=>c.abort(),4000);
+    let r=await fetch('https://api.github.com/repos/anoorhlby-coder/XFORCE/contents/data.json',{headers:{Authorization:'Bearer '+token}, signal:c.signal});
+    let sha=null, cloud=[];
+    if(r.ok){ let j=await r.json(); sha=j.sha; try{ cloud=JSON.parse(atob(j.content.replace(/\n/g,''))); }catch(e){} }
+    // لا نمسح المحلي اذا السحابة فاضية
+    if(cloud.length>0 && cloud.length>=members.length){ members=cloud; saveLocal(); render(); }
+    // رفع المحلي
+    let content=btoa(unescape(encodeURIComponent(JSON.stringify(members))));
+    let body={message:'update', content:content, branch:'main'}; if(sha) body.sha=sha;
+    let c2=new AbortController(); setTimeout(()=>c2.abort(),4000);
+    let r2=await fetch('https://api.github.com/repos/anoorhlby-coder/XFORCE/contents/data.json',{method:'PUT', headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify(body), signal:c2.signal});
+    setStatus(r2.ok?'✅ متصل بالسحابة':'تم الحفظ محلياً ✅ - التوكن غلط او بدون صلاحية');
+  }catch(e){ setStatus('تم الحفظ محلياً ✅ - تعذر الاتصال بالسحابة'); }
+}
+function exportData(){
+  let b
