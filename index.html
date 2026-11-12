@@ -2,106 +2,101 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>محفظة XFORCE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XFORCE Wallet</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
-body{background:#fff;color:#000;padding:15px}
-.logo{text-align:center;font-size:55px;font-weight:900}
-.logo span{color:#FF6B00}
-.box{border:2px solid #FF6B00;border-radius:18px;padding:16px;margin:14px 0;text-align:center}
-.big{text-align:center;font-size:48px;font-weight:900}
-input{width:100%;padding:13px;margin:6px 0;border:1px solid #ddd;border-radius:12px;text-align:center;font-size:17px}
-.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:bold;font-size:17px;margin:4px 0}
-.orange{background:#FF6B00;color:#fff}
-.black{background:#000;color:#fff}
-.green{background:#00b894;color:#fff}
-.red{background:#e74c3c;color:#fff}
-.card{border:1px solid #eee;border-radius:14px;padding:12px;margin:8px 0;text-align:right}
-.small{font-size:14px;color:#555}
-.flex{display:flex;gap:6px}
-.flex .btn{padding:10px;font-size:14px}
+body{background:#0f1115;color:#fff;font-family:system-ui;padding:15px}
+.card{background:#1a1d24;border-radius:15px;padding:15px;margin:10px 0}
+input{width:100%;padding:12px;margin:5px 0;border-radius:10px;border:0;background:#2a2e38;color:#fff;font-size:16px}
+button{width:100%;padding:12px;border:0;border-radius:10px;font-size:16px;margin:5px 0;font-weight:bold}
+.green{background:#22c55e}.blue{background:#3b82f6;color:#fff}.red{background:#ef4444;color:#fff}.orange{background:#f59e0b}
+.member{background:#22262f;border-radius:12px;padding:12px;margin:8px 0}
+.flex{display:flex;gap:8px}.flex button{flex:1}
+small{color:#aaa}
 </style>
 </head>
 <body>
-<div id="lock" class="box">
-<div class="logo"><span>X</span>FORCE</div>
-<h3 style="margin:12px 0">🔒 محفظة مقفولة</h3>
-<input type="password" id="pass" placeholder="اكتب كلمة السر">
-<button class="btn orange" onclick="go()">دخول</button>
+<h2>⚡ XFORCE Wallet</h2>
+<div class="card">
+<h3>رصيد المحفظة: <span id="bal">0</span> $</h3>
+<p>المشتركين: <span id="count">0</span> شخص | <span id="sync">⏳...</span></p>
+<input id="addMoney" type="number" placeholder="مبلغ اضافة رصيد">
+<button class="green" onclick="addBal()">+ اضافة رصيد</button>
 </div>
 
-<div id="app" style="display:none">
-<div class="logo"><span>X</span>FORCE</div>
-
-<div class="box">
-<h3>رصيد المحفظة</h3>
-<div class="big" id="bal">$ 0</div>
-<input type="number" id="amt" placeholder="المبلغ $">
-<button class="btn orange" onclick="addM()">+ إضافة مصاري</button>
-<button class="btn black" onclick="takeM()">- تخريج مصاري</button>
+<div class="card">
+<h3>➕ اضافة مشترك</h3>
+<input id="mName" placeholder="اسم المشترك">
+<input id="mPrice" type="number" value="20" placeholder="سعر الاشتراك">
+<input id="mDays" type="number" value="30" placeholder="عدد الايام">
+<button class="blue" onclick="addMember()">اضافة مشترك</button>
 </div>
-
-<div class="box">
-<h3>👥 المشتركين: <span id="count">0</span> شخص</h3>
-<input type="text" id="mname" placeholder="اسم المشترك - مثلاً أحمد">
-<input type="number" id="mdays" placeholder="كم يوم؟ مثلاً 30" value="30">
-<input type="number" id="mprice" placeholder="سعر الاشتراك $ - مثلاً 10" value="10">
-<button class="btn green" onclick="addMember()">+ إضافة مشترك جديد</button>
 <div id="list"></div>
-</div>
 
-<button class="btn black" onclick="location.reload()">🚪 قفل المحفظة</button>
+<div class="card">
+<h3>⚙️ اعدادات المزامنة</h3>
+<input id="tokInput" placeholder="الصق التوكن هنا مرة وحدة">
+<button class="orange" onclick="saveToken()">💾 حفظ التوكن بهاد الجهاز</button>
+<small>التوكن بينحفظ بس بتلفونك، ما بينبعت لحدا. اذا غيرت تلفون، افتح هاد الموقع وحط نفس التوكن هون.</small>
 </div>
 
 <script>
-let bal = Number(localStorage.getItem('wallet_bal') || 0);
-let members = JSON.parse(localStorage.getItem('xforce_members') || '[]');
-function save(){ localStorage.setItem('wallet_bal', bal); localStorage.setItem('xforce_members', JSON.stringify(members)); }
-function go(){
-let v = document.getElementById('pass').value.trim();
-if(v=='0001' || v=='٠٠٠١'){
-document.getElementById('lock').style.display='none';
-document.getElementById('app').style.display='block';
-render();
-} else { alert('كلمة السر غلط!'); }
-}
-function showBal(){ document.getElementById('bal').innerText = '$ ' + bal; }
-function addM(){ let x=Number(document.getElementById('amt').value); if(!x) return; bal+=x; save(); document.getElementById('amt').value=''; showBal(); }
-function takeM(){ let x=Number(document.getElementById('amt').value); if(!x) return; bal-=x; save(); document.getElementById('amt').value=''; showBal(); }
-function addMember(){
-let n=document.getElementById('mname').value.trim();
-let d=Number(document.getElementById('mdays').value || 30);
-let p=Number(document.getElementById('mprice').value || 0);
-if(!n){ alert('اكتب الاسم!'); return; }
-let end = Date.now() + d*24*60*60*1000;
-members.push({name:n, end:end});
-bal += p; save();
-document.getElementById('mname').value='';
+const REPO='anoorhlby-coder/XFORCE';
+let bal=0; let members=[]; let sha=null;
+let token=localStorage.getItem('x_token')||'';
+document.getElementById('tokInput').value=token;
+
+async function load(){
+if(!token){document.getElementById('sync').innerText='حط التوكن تحت';render();return;}
+try{
+let r=await fetch(`https://api.github.com/repos/${REPO}/contents/data.json`,{headers:{Authorization:'token '+token,Accept:'application/vnd.github.v3+json'}});
+if(r.status==404){await saveCloud();return;}
+let j=await r.json(); sha=j.sha;
+let d=JSON.parse(atob(j.content.replace(/\n/g,'')));
+bal=d.bal||0; members=d.members||[];
+document.getElementById('sync').innerText='✅ متزامن مع السحابة';
+}catch(e){document.getElementById('sync').innerText='❌ خطأ بالتوكن او النت';}
 render();
 }
-function renew(i){
-members[i].end += 30*24*60*60*1000;
-if(members[i].end < Date.now()){ members[i].end = Date.now() + 30*24*60*60*1000; }
-save(); render();
+async function saveCloud(){
+if(!token)return;
+let content=btoa(unescape(encodeURIComponent(JSON.stringify({bal,members}))));
+let body={message:'update',content};
+if(sha)body.sha=sha;
+let r=await fetch(`https://api.github.com/repos/${REPO}/contents/data.json`,{method:'PUT',headers:{Authorization:'token '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+let j=await r.json(); if(j.content)sha=j.content.sha;
+document.getElementById('sync').innerText='✅ تم الحفظ بالسحابة';
 }
-function delMember(i){
-if(!confirm('تلغي اشتراك '+members[i].name+' ؟')) return;
-members.splice(i,1); save(); render();
-}
+function save(){render();saveCloud();}
 function render(){
-showBal();
-document.getElementById('count').innerText = members.length;
+document.getElementById('bal').innerText=bal;
+document.getElementById('count').innerText=members.length;
 let h='';
 members.forEach((m,i)=>{
-let left = Math.ceil((m.end - Date.now())/ (24*60*60*1000));
-let txt = left <= 0 ? '❌ منتهي' : 'باقي '+left+' يوم';
-let col = left <= 0 ? 'color:#e74c3c' : (left<=5 ? 'color:#FF6B00' : 'color:#00b894');
-h += '<div class="card"><b style="font-size:19px">'+m.name+'</b><div class="small" style="'+col+';font-weight:bold">'+txt+'</div><div class="small">بيخلص: '+new Date(m.end).toLocaleDateString('ar-SY')+'</div><div class="flex"><button class="btn green" onclick="renew('+i+')">🔁 تجديد +30 يوم</button><button class="btn red" onclick="delMember('+i+')">❌ الغاء</button></div></div>';
+let left=Math.ceil((m.end-Date.now())/86400000);
+let txt=left>0?'باقي '+left+' يوم':'❌ منتهي';
+let date=new Date(m.end).toLocaleDateString('ar');
+h+=`<div class="member"><b>${m.name}</b><br>${txt} - بيخلص: ${date}<div class="flex"><button class="green" onclick="renew(${i})">🔁 تجديد +30 يوم</button><button class="red" onclick="del(${i})">❌ الغاء</button></div></div>`;
 });
-if(!members.length) h='<p class="small" style="margin-top:10px">لسا ما في مشتركين</p>';
 document.getElementById('list').innerHTML=h;
 }
+function addBal(){let v=parseInt(document.getElementById('addMoney').value||0);bal+=v;document.getElementById('addMoney').value='';save();}
+function addMember(){
+let n=document.getElementById('mName').value.trim();
+let p=parseInt(document.getElementById('mPrice').value||20);
+let d=parseInt(document.getElementById('mDays').value||30);
+if(!n)return alert('حط الاسم');
+members.push({name:n,end:Date.now()+d*86400000});
+bal+=p;document.getElementById('mName').value='';save();
+}
+function renew(i){members[i].end+=30*86400000;save();}
+function del(i){if(confirm('متأكد بدك تلغي '+members[i].name+' ؟')){members.splice(i,1);save();}}
+function saveToken(){
+token=document.getElementById('tokInput').value.trim();
+localStorage.setItem('x_token',token);
+alert('تم حفظ التوكن!'); load();
+}
+load();
 </script>
 </body>
 </html>
