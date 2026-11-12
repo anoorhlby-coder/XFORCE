@@ -65,3 +65,18 @@ function addMoney(){ let v = Number(document.getElementById('amount').value); if
 function takeMoney(){ let v = Number(document.getElementById('amount').value); if(!v) return alert('حط المبلغ'); balance-=v; document.getElementById('amount').value=''; save(); }
 function addMember(){
 let n=document.getElementById('name').value.trim(); if(!n) return alert('
+function render(){
+document.getElementById('balance').innerText='$ '+balance;
+document.getElementById('count').innerText=members.length;
+let s=document.getElementById('search').value;
+let html='';
+members.forEach((m,i)=>{
+if(s && !m.name.includes(s)) return;
+html+=`<div class="member"><div><b>${m.name}</b><br><small>${m.days} يوم | ${m.date}</small></div><button class="del" onclick="delMember(${i})">حذف</button></div>`;
+});
+document.getElementById('list').innerHTML=html || '<p style="text-align:center;color:#999;margin:10px">ما في أعضاء</p>';
+}
+if(sessionStorage.getItem('xforce_ok')=='1'){ render(); }
+</script>
+</body>
+</html>
