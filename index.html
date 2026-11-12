@@ -28,3 +28,8 @@ input,select{width:90%;padding:12px;margin:6px;background:#222;color:#fff;border
 <div id="l"></div>
 <div class="card"><button onclick="exp()">📥 تصدير نسخة احتياطية</button><input type="file" id="f" style="display:none" onchange="imp(event)"><button style="background:#222;box-shadow:none" onclick="document.getElementById('f').click()">📤 استيراد نسخة احتياطية</button></div>
 </div>
+<script>
+let s=[];try{s=JSON.parse(localStorage.getItem('xforce_members_v3')||'[]')}catch(e){}
+function checkPw(){if(document.getElementById('pw').value=='0001'){document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';r()}else{alert('كلمة السر غلط')}}
+function save(){localStorage.setItem('xforce_members_v3',JSON.stringify(s))}
+function r(){document.getElementById('c').textContent=s.length+' مشترك';let t=0;s.forEach(x=>t+=Number(x.money||0));document.getElementById('tot').textContent='الرصيد الكلي: '+t+'$';document.getElementById('sel').innerHTML=s.map((x,i)=>`<option value="${i}">${x.name} - ${x.money}$</option>`).join('');document.getElementById('l').innerHTML
