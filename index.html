@@ -29,9 +29,7 @@ function renew(i){let d=new Date(s[i].end);d.setDate(d.getDate()+30);s[i].end=d.
 function d(i){if(confirm('حذف؟')){s.splice(i,1);save();r()}}
 function clearHist(){if(confirm('مسح السجل؟')){log=[];save();r()}}
 function exp(){let b=new Blob([JSON.stringify({members:s,log:log})]);let a2=document.createElement('a');a2.href=URL.createObjectURL(b);a2.download='xforce-backup.json';a2.click()}
-function imp(e){let f=e.target.files[0];let rd=new FileReader();rd.onload=function(){let j=JSON.parse(rd.result);if(j.members){s=j.members;log=j.log||[]}else{s=j}save();r()};rd.readAsText(f)}
-function cloudUp(){document.getElementById('cloudMsg').textContent='جاري الرفع...';fetch('https://jsonblob.com/api/jsonBlob',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({members:s,log:log})}).then(function(res){let loc=res.headers.get('Location');let id=loc.split('/').pop();document.getElementById('cloudId').value=id;document.getElementById('cloudMsg').textContent='تم الرفع! كودك: '+id+' - انسخو واحفظو';alert('تم الرفع! كودك: '+id)}).catch(function(){document.getElementById('cloudMsg').textContent='فشل الرفع، جرب مرة تانية'})}
-function cloudDown(){let id=document.getElementById('cloudId').value.trim();if(!id){alert('حط كود السحابة اول');return}document.getElementById('cloudMsg').textContent='جاري التنزيل...';fetch('https://jsonblob.com/api/jsonBlob/'+id).then(function(res){return res.json()}).then(function(j){s=j.members||[];log=j.log||[];save();r();document.getElementById('cloudMsg').textContent='تم التنزيل! صار عندك '+s.length+' مشترك';alert('تم التنزيل بنجاح')}).catch(function(){document.getElementById('cloudMsg').textContent='الكود غلط او ما في نت'})}
+function imp(e){let f=e.target.files[0];let rd=new FileReader();rd.onload=function(){let j=JSON.parse(rd.result);if(j.members){s=j.members;log=j.log||[]}else{s=j}save();r()};rd.readAsText(f)}اول');return}document.getElementById('cloudMsg').textContent='جاري
 </script>
 </body>
 </html>
