@@ -2,95 +2,75 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XFORCE - إدارة النادي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XFORCE</title>
 <style>
-*{box-sizing:border-box;font-family:Arial}body{background:#0f0f0f;color:#fff;margin:0;padding:15px}
-h1{text-align:center;color:#ffcc00;font-size:32px;margin:5px}h1 span{color:#fff}
-p.sub{text-align:center;color:#aaa;margin-top:0}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.card{background:#1e1e1e;padding:15px;border-radius:12px;text-align:center}
-.card b{font-size:26px;display:block}.green{color:#00ff88}.red{color:#ff4444}.yellow{color:#ffcc00}
-.box{background:#1e1e1e;padding:15px;border-radius:12px;margin-top:15px}
-input,select{width:100%;padding:12px;margin:5px 0;border-radius:8px;border:none;background:#333;color:#fff}
-button{width:100%;padding:12px;border:none;border-radius:8px;background:#ffcc00;font-weight:bold;cursor:pointer;margin-top:5px}
-.member{background:#2a2a2a;padding:12px;border-radius:10px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
-.member.danger{background:#4a1a1a;border:1px solid #ff4444}
-.btns{display:flex;gap:5px}.btns button{width:auto;padding:8px 12px;font-size:13px}
-.renew{background:#00ff88}.del{background:#ff4444;color:#fff}
+body{margin:0;font-family:sans-serif;background:#fff;color:#111;text-align:center}
+header{padding:25px 10px 10px}
+.logo{font-size:55px;font-weight:900;letter-spacing:1px}
+.logo span{color:#ff6a00}
+.logo b{color:#111}
+.sub{color:#ff6a00;font-weight:700;margin-top:2px}
+.card{background:#fff;border:2px solid #ff6a00;border-radius:20px;padding:20px;margin:20px 15px;box-shadow:0 5px 20px #ff6a0033}
+.balance{font-size:38px;font-weight:900}
+.balance small{font-size:16px;color:#666}
+input{width:90%;padding:14px;border:2px solid #eee;border-radius:12px;font-size:18px;text-align:center;margin:10px 0;outline:none}
+input:focus{border-color:#ff6a00}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:18px;font-weight:800;margin-top:8px}
+.add{background:#ff6a00;color:#fff}
+.out{background:#111;color:#fff}
+.history{text-align:right;padding:0 20px}
+.item{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0}
+.plus{color:green;font-weight:800}
+.minus{color:red;font-weight:800}
 </style>
 </head>
 <body>
-<h1>X<span>FORCE</span></h1>
-<p class="sub">نظام إدارة النادي - الاشتراك 20$</p>
-<div class="cards">
-<div class="card">المسجلين<b id="total">0</b></div>
-<div class="card">اشتراك شغال<b class="green" id="active">0</b></div>
-<div class="card">رح يخلص قريباً<b class="yellow" id="soon">0</b></div>
-<div class="card">منتهي<b class="red" id="expired">0</b></div>
-<div class="card">الداخل $<b class="green" id="inMoney">0</b></div>
-<div class="card">الخارج $<b class="red" id="outMoney">0</b></div>
-<div class="card" style="grid-column:span 2">الصافي $<b class="yellow" id="net">0</b></div>
+<header>
+<div class="logo"><span>X</span><b>FORCE</b></div>
+<div class="sub">محفظتك - أبيض وبرتقاني</div>
+</header>
+
+<div class="card">
+<div>رصيدك الحالي</div>
+<div class="balance"><span id="bal">0</span> <small>ل.س</small></div>
+<input id="amount" type="number" placeholder="اكتب المبلغ هون">
+<button class="btn add" onclick="addMoney()">+ إضافة مبلغ</button>
+<button class="btn out" onclick="outMoney()">- تخريج مبلغ</button>
 </div>
-<div class="box">
-<h3>➕ إضافة عضو جديد</h3>
-<input id="name" placeholder="اسم العضو">
-<input id="phone" placeholder="رقم الهاتف">
-<input type="date" id="startDate">
-<button onclick="addMember()">إضافة عضو - 20$</button>
+
+<div class="history">
+<h3>آخر الحركات</h3>
+<div id="list">ما في حركات لسا</div>
 </div>
-<div class="box">
-<h3>➖ إضافة مصروف</h3>
-<input id="expName" placeholder="شو اشتريت؟ مثال: مياه، صيانة">
-<input type="number" id="expAmount" placeholder="المبلغ بالدولار">
-<button onclick="addExpense()" style="background:#ff4444;color:#fff">تسجيل مصروف</button>
-</div>
-<div class="box">
-<h3>👥 الأعضاء</h3>
-<div id="list"></div>
-</div>
+
 <script>
-let members = JSON.parse(localStorage.getItem('xforce_members')||'[]');
-let income = parseFloat(localStorage.getItem('xforce_in')||0);
-let outcome = parseFloat(localStorage.getItem('xforce_out')||0);
-function save(){localStorage.setItem('xforce_members',JSON.stringify(members));localStorage.setItem('xforce_in',income);localStorage.setItem('xforce_out',outcome);render();}
-function addMember(){
-let n=document.getElementById('name').value, p=document.getElementById('phone').value, s=document.getElementById('startDate').value;
-if(!n||!s){alert('حط الاسم والتاريخ');return;}
-let start=new Date(s); let end=new Date(start); end.setDate(end.getDate()+30);
-members.push({name:n,phone:p,start:s,end:end.toISOString().split('T')[0]});
-income+=20; document.getElementById('name').value=''; document.getElementById('phone').value='';
-save(); alert('تم إضافة '+n);
-}
-function addExpense(){
-let nm=document.getElementById('expName').value, am=parseFloat(document.getElementById('expAmount').value);
-if(!nm||!am){alert('حط اسم المصروف والمبلغ');return;}
-outcome+=am; document.getElementById('expName').value=''; document.getElementById('expAmount').value=''; save();
-}
-function renew(i){
-let d=new Date(members[i].end); d.setDate(d.getDate()+30); members[i].end=d.toISOString().split('T')[0]; income+=20; save();
-}
-function delMember(i){if(confirm('متأكد بدك تلغي '+members[i].name+' ؟')){members.splice(i,1);save();}}
+let bal = Number(localStorage.getItem('x_bal')||0);
+let hist = JSON.parse(localStorage.getItem('x_hist')||'[]');
 function render(){
-let today=new Date(); today.setHours(0,0,0,0);
-let active=0, soon=0, exp=0; let html='';
-members.forEach((m,i)=>{
-let end=new Date(m.end); let diff=Math.ceil((end-today)/(1000*60*60*24));
-let status='', cls='';
-if(diff<0){status='❌ منتهي';exp++;cls='danger';}
-else if(diff<=5){status='⚠️ بيخلص بعد '+diff+' يوم';soon++;cls='danger';}
-else {status='✅ باقي '+diff+' يوم';active++;}
-html+=`<div class="member ${cls}"><div><b>${m.name}</b><br>📞 ${m.phone||'-'}<br>ينتهي: ${m.end}<br>${status}</div><div class="btns"><button class="renew" onclick="renew(${i})">تجديد</button><button class="del" onclick="delMember(${i})">إلغاء</button></div></div>`;
-});
-document.getElementById('list').innerHTML=html||'ما في أعضاء بعد';
-document.getElementById('total').innerText=members.length;
-document.getElementById('active').innerText=active;
-document.getElementById('soon').innerText=soon;
-document.getElementById('expired').innerText=exp;
-document.getElementById('inMoney').innerText=income;
-document.getElementById('outMoney').innerText=outcome;
-document.getElementById('net').innerText=income-outcome;
-document.getElementById('startDate').value=new Date().toISOString().split('T')[0];
+document.getElementById('bal').innerText=bal.toLocaleString();
+let l=document.getElementById('list');
+if(hist.length==0){l.innerHTML='ما في حركات لسا';return}
+l.innerHTML=hist.slice().reverse().map(h=>`<div class="item"><span>${h.type}</span><b class="${h.type=='إضافة'? 'plus':'minus'}">${h.type=='إضافة'?'+':'-'} ${h.amt}</b></div>`).join('');
+}
+function addMoney(){
+let v=Number(document.getElementById('amount').value);
+if(!v) return alert('اكتب المبلغ أولاً');
+bal+=v; hist.push({type:'إضافة',amt:v});
+save();
+}
+function outMoney(){
+let v=Number(document.getElementById('amount').value);
+if(!v) return alert('اكتب المبلغ أولاً');
+if(v>bal) return alert('رصيدك ما بيكفي');
+bal-=v; hist.push({type:'تخريج',amt:v});
+save();
+}
+function save(){
+localStorage.setItem('x_bal',bal);
+localStorage.setItem('x_hist',JSON.stringify(hist));
+document.getElementById('amount').value='';
+render();
 }
 render();
 </script>
