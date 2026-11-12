@@ -1,37 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>XFORCE</title>
-<style>
-body{background:#000;color:#fff;text-align:center;font-family:sans-serif}
-h1{color:#ff7a00;font-size:46px;text-shadow:0 0 15px #ff7a00}
-button{background:#ff7a00;color:#fff;padding:12px;width:100%;border:0;border-radius:12px;box-shadow:0 0 15px #ff7a00;margin:5px 0}
-input,select{width:90%;padding:12px;margin:6px;background:#222;color:#fff;border:1px solid #ff7a00;border-radius:10px}
-.card{border:1px solid #ff7a00;border-radius:15px;padding:12px;margin:10px}
-</style>
+<style>body{background:#000;color:#fff;font-family:Arial;text-align:center}input,select{width:90%;padding:12px;margin:5px;background:#111;color:#fff;border:1px solid #ff7a00;border-radius:10px}.card{border:1px solid #ff7a00;border-radius:15px;padding:15px;margin:10px}button{width:90%;padding:12px;background:#ff7a00;border:none;border-radius:10px;font-weight:bold;margin:5px}</style>
 </head>
 <body>
 <div id="lock" style="padding:40px"><h1>XFORCE</h1><input id="pw" type="password" placeholder="كلمة السر"><button onclick="checkPw()">دخول</button></div>
 <div id="app" style="display:none">
 <h1>XFORCE</h1>
-<div class="card"><div id="c"></div><div id="tot" style="font-size:22px;color:#0f0"></div></div>
-<div class="card"><b>💰 إدارة المصاري لحالها</b><select id="sel"></select><input id="amt" type="number" placeholder="المبلغ $"><button style="background:#00c853" onclick="moneyAdd()">+ إضافة مصاري</button><button style="background:#d50000" onclick="moneyOut()">- تخريج مصاري</button></div>
+<div class="card"><div id="c"></div><div id="tot"></div></div>
 <div class="card"><input id="n" placeholder="اسم المشترك"><input id="m" type="number" placeholder="الرصيد $"><button onclick="a()">+ إضافة مشترك - 30 يوم</button></div>
 <div id="l"></div>
-<div class="card"><button onclick="exp()">📥 تصدير نسخة احتياطية</button><input type="file" id="f" style="display:none" onchange="imp(event)"><button style="background:#222;box-shadow:none" onclick="document.getElementById('f').click
+<div class="card"><button onclick="exp()">تصدير نسخة احتياطية</button><input type="file" onchange="imp(event)"></div>
+<div class="card"><b>إدارة المصاري لحالها</b><select id="sel"></select><input id="amt" type="number" value="50"><button style="background:#00c853" onclick="moneyAdd()">إضافة مصاري</button><button style="background:#ff1744" onclick="moneyOut()">تخريج مصاري</button></div>
 </div>
 <script>
 let s=[];try{s=JSON.parse(localStorage.getItem('xforce_members_v3')||'[]')}catch(e){}
-function checkPw(){alert('اشتغل');document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';r()}
+function checkPw(){document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';r()}
 function save(){localStorage.setItem('xforce_members_v3',JSON.stringify(s))}
-function r(){document.getElementById('c').textContent=s.length+' مشترك';let t=0;for(let k=0;k<s.length;k++){t+=Number(s[k].money||0)}document.getElementById('tot').textContent='الرصيد الكلي: '+t+'$';let sel='';for(let k=0;k<s.length;k++){sel+='<option value="'+k+'">'+s[k].name+' - '+s[k].money+'$</option>'}document.getElementById('sel').innerHTML=sel;let h='';for(let k=0;k<s.length;k++){h+='<div class="card"><b>'+s[k].name+'</b> - '+s[k].money+'$<br>ينتهي '+s[k].end+'<br><button onclick="renew('+k+')">تجديد 30 يوم</button><button style="background:#333;box-shadow:none" onclick="d('+k+')">حذف</button></div>'}document.getElementById('l').innerHTML=h||'لا يوجد مشتركين'}
+function r(){document.getElementById('c').textContent=s.length+' مشترك';let t=0;for(let k=0;k<s.length;k++){t+=Number(s[k].money||0)}document.getElementById('tot').textContent='الرصيد الكلي: '+t+'$';let sel='';for(let k=0;k<s.length;k++){sel+='<option value="'+k+'">'+s[k].name+' - '+s[k].money+'$</option>'}document.getElementById('sel').innerHTML=sel;let h='';for(let k=0;k<s.length;k++){h+='<div class="card"><b>'+s[k].name+'</b> - '+s[k].money+'$<br>ينتهي '+s[k].end+'<br><button onclick="renew('+k+')">تجديد 30 يوم</button><button style="background:#333" onclick="d('+k+')">حذف</button></div>'}document.getElementById('l').innerHTML=h||'لا يوجد مشتركين'}
 function a(){let n=document.getElementById('n').value;if(!n)return;let d=new Date();d.setDate(d.getDate()+30);s.push({name:n,money:Number(document.getElementById('m').value||0),end:d.toISOString().slice(0,10)});save();r()}
-function moneyAdd(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money+=v;save();r();alert('تمت الاضافة')}
-function moneyOut(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money-=v;save();r();alert('تم التخريج')}
+function moneyAdd(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money+=v;save();r()}
+function moneyOut(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money-=v;save();r()}
 function renew(i){let d=new Date(s[i].end);d.setDate(d.getDate()+30);s[i].end=d.toISOString().slice(0,10);save();r()}
 function d(i){if(confirm('حذف؟')){s.splice(i,1);save();r()}}
 function exp(){let b=new Blob([JSON.stringify(s)]);let a2=document.createElement('a');a2.href=URL.createObjectURL(b);a2.download='xforce-backup.json';a2.click()}
 function imp(e){let f=e.target.files[0];let rd=new FileReader();rd.onload=function(){s=JSON.parse(rd.result);save();r()};rd.readAsText(f)}
 </script>
+</body>
+</html>
