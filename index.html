@@ -94,4 +94,14 @@ showBal();
 document.getElementById('count').innerText = members.length;
 let h='';
 members.forEach((m,i)=>{
-let left = Math.ceil((m.end - Date.now())/
+let left = Math.ceil((m.end - Date.now())/ (24*60*60*1000));
+let txt = left <= 0 ? '❌ منتهي' : 'باقي '+left+' يوم';
+let col = left <= 0 ? 'color:#e74c3c' : (left<=5 ? 'color:#FF6B00' : 'color:#00b894');
+h += '<div class="card"><b style="font-size:19px">'+m.name+'</b><div class="small" style="'+col+';font-weight:bold">'+txt+'</div><div class="small">بيخلص: '+new Date(m.end).toLocaleDateString('ar-SY')+'</div><div class="flex"><button class="btn green" onclick="renew('+i+')">🔁 تجديد +30 يوم</button><button class="btn red" onclick="delMember('+i+')">❌ الغاء</button></div></div>';
+});
+if(!members.length) h='<p class="small" style="margin-top:10px">لسا ما في مشتركين</p>';
+document.getElementById('list').innerHTML=h;
+}
+</script>
+</body>
+</html>
