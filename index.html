@@ -6,59 +6,14 @@
 <title>XFORCE GYM</title>
 <style>
 body{background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:15px}
-h1{color:#ff6a00;font-size:42px;margin:5px}
-.card{background:#111;border:1px solid #333;border-radius:15px;padding:15px;margin:12px 0}
-input{width:92%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #333;background:#222;color:#fff;font-size:16px}
-button{width:100%;padding:13px;border:0;border-radius:10px;background:#ff6a00;color:#fff;font-size:17px;font-weight:bold;margin:6px 0}
-button.gray{background:#333}
-.member{background:#1a1a1a;border-radius:10px;padding:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
-</style>
-</head>
-<body>
-<h1>XFORCE</h1><div>GYM • MEMBERSHIP • APP</div>
-<div class="card">
-<div id="count">0 مشترك</div>
-<input id="name" placeholder="اسم المشترك">
-<input id="money" type="number" placeholder="الرصيد بالدولار $">
-<button onclick="addMember()">+ إضافة مشترك - 30 يوم</button>
-<div id="status">جاهز ✅ - الحفظ محلي</div>
-</div>
-<div id="list"></div>
-<div class="card">
-<button class="gray" onclick="exportData()">📥 تصدير نسخة احتياطية</button>
-<input type="file" id="fileInput" style="display:none" onchange="importData(event)">
-<button class="gray" onclick="document.getElementById('fileInput').click()">📤 استيراد نسخة احتياطية</button>
-<button class="gray" onclick="clearAll()">🗑️ حذف الكل</button>
-</div>
-<script>
-let members = [];
-try{ members = JSON.parse(localStorage.getItem('xforce_members_v3')||'[]'); }catch(e){ members=[]; }
-function saveLocal(){ localStorage.setItem('xforce_members_v3', JSON.stringify(members)); }
-function render(){
-  document.getElementById('count').textContent = members.length + ' مشترك';
-  document.getElementById('list').innerHTML = members.map((m,i)=>`<div class="member"><span><b>${m.name}</b><br>💰 ${m.money}$ - ينتهي ${m.end}</span><button style="width:auto;background:#c00" onclick="delMember(${i})">حذف</button></div>`).join('') || '<p>لا يوجد مشتركين</p>';
-}
-function addMember(){
-  let n=document.getElementById('name').value.trim();
-  let mo=document.getElementById('money').value||0;
-  if(!n){alert('اكتب الاسم');return;}
-  let d=new Date(); d.setDate(d.getDate()+30);
-  members.push({name:n, money:mo, end:d.toISOString().slice(0,10)});
-  saveLocal(); render();
-  document.getElementById('status').textContent = 'تمت الإضافة ✅ - ' + members.length + ' مشترك';
-  document.getElementById('name').value=''; document.getElementById('money').value='';
-}
-function delMember(i){ if(confirm('حذف؟')){ members.splice(i,1); saveLocal(); render(); } }
-function clearAll(){ if(confirm('حذف الكل؟')){ members=[]; saveLocal(); render(); } }
-function exportData(){
-  let b=new Blob([JSON.stringify(members)],{type:'application/json'});
-  let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='xforce-backup.json'; a.click();
-}
-function importData(e){
-  let f=e.target.files[0]; if(!f) return;
-  let r=new FileReader(); r.onload=()=>{ try{ members=JSON.parse(r.result); saveLocal(); render(); alert('تم الاستيراد ✅'); }catch(e){alert('ملف غلط');} }; r.readAsText(f);
-}
-render();
-</script>
-</body>
-</html>
+h1{color:#ff7a00;font-size:46px;margin:5px;text-shadow:0 0 15px #ff7a00,0 0 35px #ff4d00,0 0 60px #ff4d00}
+.subtitle{color:#ffb26b;text-shadow:0 0 12px #ff7a00;letter-spacing:2px}
+.card{background:#0d0d0d;border:1px solid #ff7a00;border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 0 20px #ff7a0022}
+input{width:92%;padding:13px;margin:7px 0;border-radius:12px;border:1px solid #ff7a0055;background:#1a1a1a;color:#fff;font-size:16px}
+button{width:100%;padding:13px;border:0;border-radius:12px;background:#ff7a00;color:#fff;font-size:17px;font-weight:bold;margin:6px 0;box-shadow:0 0 18px #ff7a00,0 0 35px #ff4d0055;cursor:pointer}
+button.gray{background:#222;border:1px solid #444;box-shadow:none}
+.member{background:#111;border:1px solid #ff7a0033;border-radius:14px;padding:12px;margin:10px 0}
+.mrow{display:flex;gap:6px;margin-top:8px}
+.mrow button{font-size:14px;padding:9px}
+.btn-green{background:#00c853;box-shadow:0 0 12px #00c853}
+.btn-red{background:#d
