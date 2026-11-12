@@ -2,29 +2,36 @@
 <html lang="ar" dir="rtl">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>XFORCE</title>
-<style>body{background:#000;color:#fff;font-family:Arial;text-align:center}input,select{width:90%;padding:12px;margin:5px;background:#111;color:#fff;border:1px solid #ff7a00;border-radius:10px}.card{border:1px solid #ff7a00;border-radius:15px;padding:15px;margin:10px}button{width:90%;padding:12px;background:#ff7a00;border:none;border-radius:10px;font-weight:bold;margin:5px}</style>
+<style>body{background:#000;color:#fff;font-family:Arial;text-align:center}input,select{width:90%;padding:12px;margin:5px;background:#111;color:#fff;border:1px solid #ff7a00;border-radius:10px}.card{border:1px solid #ff7a00;border-radius:15px;padding:15px;margin:10px}button{width:90%;padding:12px;background:#ff7a00;border:none;border-radius:10px;font-weight:bold;margin:5px}.log{border-bottom:1px solid #333;padding:8px;text-align:right}</style>
 </head>
+<body>
 <div id="lock" style="padding:40px"><h1>XFORCE</h1><input id="pw" type="password" placeholder="كلمة السر"><button onclick="checkPw()">دخول</button></div>
 <div id="app" style="display:none">
 <h1>XFORCE</h1>
 <div class="card"><div id="c"></div><div id="tot"></div></div>
 <div class="card"><input id="n" placeholder="اسم المشترك"><input id="m" type="number" placeholder="الرصيد $"><button onclick="a()">+ إضافة مشترك - 30 يوم</button></div>
 <div id="l"></div>
-<div class="card"><button onclick="exp()">تصدير نسخة احتياطية</button><input type="file" onchange="imp(event)"></div>
 <div class="card"><b>إدارة المصاري لحالها</b><select id="sel"></select><input id="amt" type="number" value="50"><button style="background:#00c853" onclick="moneyAdd()">إضافة مصاري</button><button style="background:#ff1744" onclick="moneyOut()">تخريج مصاري</button></div>
+<div class="card"><b>سجل الإضافة والتخريج</b><div id="hist"></div><button style="background:#333" onclick="clearHist()">مسح السجل</button></div>
+<div class="card"><b>السحابة ☁️</b><input id="cloudId" placeholder="كود السحابة - الصقو هون للتنزيل"><button onclick="cloudUp()">رفع عالسحابة - حفظ</button><button style="background:#00c853" onclick="cloudDown()">تنزيل من السحابة - استرجاع الاسماء</button><div id="cloudMsg"></div></div>
+<div class="card"><button onclick="exp()">تصدير نسخة احتياطية</button><input type="file" onchange="imp(event)"></div>
 </div>
 <script>
-let s=[];try{s=JSON.parse(localStorage.getItem('xforce_members_v3')||'[]')}catch(e){}
+let s=[];let log=[];try{s=JSON.parse(localStorage.getItem('xforce_members_v3')||'[]')}catch(e){}try{log=JSON.parse(localStorage.getItem('xforce_log')||'[]')}catch(e){}
 function checkPw(){document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';r()}
-function save(){localStorage.setItem('xforce_members_v3',JSON.stringify(s))}
-function r(){document.getElementById('c').textContent=s.length+' مشترك';let t=0;for(let k=0;k<s.length;k++){t+=Number(s[k].money||0)}document.getElementById('tot').textContent='الرصيد الكلي: '+t+'$';let sel='';for(let k=0;k<s.length;k++){sel+='<option value="'+k+'">'+s[k].name+' - '+s[k].money+'$</option>'}document.getElementById('sel').innerHTML=sel;let h='';for(let k=0;k<s.length;k++){h+='<div class="card"><b>'+s[k].name+'</b> - '+s[k].money+'$<br>ينتهي '+s[k].end+'<br><button onclick="renew('+k+')">تجديد 30 يوم</button><button style="background:#333" onclick="d('+k+')">حذف</button></div>'}document.getElementById('l').innerHTML=h||'لا يوجد مشتركين'}
+function save(){localStorage.setItem('xforce_members_v3',JSON.stringify(s));localStorage.setItem('xforce_log',JSON.stringify(log))}
+function addLog(name,type,amt){let d=new Date();log.unshift({name:name,type:type,amt:amt,date:d.toISOString().slice(0,10)+' '+d.toLocaleTimeString()});if(log.length>100){log.pop()}save()}
+function r(){document.getElementById('c').textContent=s.length+' مشترك';let t=0;for(let k=0;k<s.length;k++){t+=Number(s[k].money||0)}document.getElementById('tot').textContent='الرصيد الكلي: '+t+'$';let sel='';for(let k=0;k<s.length;k++){sel+='<option value="'+k+'">'+s[k].name+' - '+s[k].money+'$</option>'}document.getElementById('sel').innerHTML=sel;let h='';for(let k=0;k<s.length;k++){h+='<div class="card"><b>'+s[k].name+'</b> - '+s[k].money+'$<br>ينتهي '+s[k].end+'<br><button onclick="renew('+k+')">تجديد 30 يوم</button><button style="background:#333" onclick="d('+k+')">حذف</button></div>'}document.getElementById('l').innerHTML=h||'لا يوجد مشتركين';let hh='';for(let k=0;k<log.length;k++){let col=log[k].type=='إضافة'?'#00c853':'#ff1744';hh+='<div class="log"><b style="color:'+col+'">'+log[k].type+' '+log[k].amt+'$</b> - '+log[k].name+'<br><small>'+log[k].date+'</small></div>'}document.getElementById('hist').innerHTML=hh||'لا يوجد حركات بعد'}
 function a(){let n=document.getElementById('n').value;if(!n)return;let d=new Date();d.setDate(d.getDate()+30);s.push({name:n,money:Number(document.getElementById('m').value||0),end:d.toISOString().slice(0,10)});save();r()}
-function moneyAdd(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money+=v;save();r()}
-function moneyOut(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money-=v;save();r()}
+function moneyAdd(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;addLog(s[i].name,'إضافة',v);s[i].money+=v;save();r();alert('تمت الاضافة +'+v+'$')}
+function moneyOut(){let i=document.getElementById('sel').value;let v=Number(document.getElementById('amt').value||0);if(v==0)return;addLog(s[i].name,'تخريج',v);s[i].money-=v;save();r();alert('تم التخريج -'+v+'$')}
 function renew(i){let d=new Date(s[i].end);d.setDate(d.getDate()+30);s[i].end=d.toISOString().slice(0,10);save();r()}
 function d(i){if(confirm('حذف؟')){s.splice(i,1);save();r()}}
-function exp(){let b=new Blob([JSON.stringify(s)]);let a2=document.createElement('a');a2.href=URL.createObjectURL(b);a2.download='xforce-backup.json';a2.click()}
-function imp(e){let f=e.target.files[0];let rd=new FileReader();rd.onload=function(){s=JSON.parse(rd.result);save();r()};rd.readAsText(f)}
+function clearHist(){if(confirm('مسح السجل؟')){log=[];save();r()}}
+function exp(){let b=new Blob([JSON.stringify({members:s,log:log})]);let a2=document.createElement('a');a2.href=URL.createObjectURL(b);a2.download='xforce-backup.json';a2.click()}
+function imp(e){let f=e.target.files[0];let rd=new FileReader();rd.onload=function(){let j=JSON.parse(rd.result);if(j.members){s=j.members;log=j.log||[]}else{s=j}save();r()};rd.readAsText(f)}
+function cloudUp(){document.getElementById('cloudMsg').textContent='جاري الرفع...';fetch('https://jsonblob.com/api/jsonBlob',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({members:s,log:log})}).then(function(res){let loc=res.headers.get('Location');let id=loc.split('/').pop();document.getElementById('cloudId').value=id;document.getElementById('cloudMsg').textContent='تم الرفع! كودك: '+id+' - انسخو واحفظو';alert('تم الرفع! كودك: '+id)}).catch(function(){document.getElementById('cloudMsg').textContent='فشل الرفع، جرب مرة تانية'})}
+function cloudDown(){let id=document.getElementById('cloudId').value.trim();if(!id){alert('حط كود السحابة اول');return}document.getElementById('cloudMsg').textContent='جاري التنزيل...';fetch('https://jsonblob.com/api/jsonBlob/'+id).then(function(res){return res.json()}).then(function(j){s=j.members||[];log=j.log||[];save();r();document.getElementById('cloudMsg').textContent='تم التنزيل! صار عندك '+s.length+' مشترك';alert('تم التنزيل بنجاح')}).catch(function(){document.getElementById('cloudMsg').textContent='الكود غلط او ما في نت'})}
 </script>
 </body>
 </html>
