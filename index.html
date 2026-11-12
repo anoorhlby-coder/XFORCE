@@ -10,22 +10,30 @@ body{background:#fff;color:#000;padding:15px}
 .logo{text-align:center;font-size:55px;font-weight:900}
 .logo span{color:#FF6B00}
 .box{border:2px solid #FF6B00;border-radius:18px;padding:16px;margin:14px 0;text-align:center}
-.big{text-align:center;font-size:50px;font-weight:900}
-input{width:100%;padding:14px;margin:7px 0;border:1px solid #ddd;border-radius:12px;text-align:center;font-size:18px}
-.btn{width:100%;padding:15px;border:none;border-radius:12px;font-weight:bold;font-size:18px;margin:5px 0}
+.big{text-align:center;font-size:48px;font-weight:900}
+input{width:100%;padding:13px;margin:6px 0;border:1px solid #ddd;border-radius:12px;text-align:center;font-size:17px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:bold;font-size:17px;margin:4px 0}
 .orange{background:#FF6B00;color:#fff}
 .black{background:#000;color:#fff}
+.green{background:#00b894;color:#fff}
+.red{background:#e74c3c;color:#fff}
+.card{border:1px solid #eee;border-radius:14px;padding:12px;margin:8px 0;text-align:right}
+.small{font-size:14px;color:#555}
+.flex{display:flex;gap:6px}
+.flex .btn{padding:10px;font-size:14px}
 </style>
 </head>
 <body>
 <div id="lock" class="box">
 <div class="logo"><span>X</span>FORCE</div>
 <h3 style="margin:12px 0">🔒 محفظة مقفولة</h3>
-<input type="text" id="pass" placeholder="اكتب 0001">
+<input type="password" id="pass" placeholder="اكتب كلمة السر">
 <button class="btn orange" onclick="go()">دخول</button>
 </div>
+
 <div id="app" style="display:none">
 <div class="logo"><span>X</span>FORCE</div>
+
 <div class="box">
 <h3>رصيد المحفظة</h3>
 <div class="big" id="bal">$ 0</div>
@@ -33,23 +41,57 @@ input{width:100%;padding:14px;margin:7px 0;border:1px solid #ddd;border-radius:1
 <button class="btn orange" onclick="addM()">+ إضافة مصاري</button>
 <button class="btn black" onclick="takeM()">- تخريج مصاري</button>
 </div>
+
+<div class="box">
+<h3>👥 المشتركين: <span id="count">0</span> شخص</h3>
+<input type="text" id="mname" placeholder="اسم المشترك - مثلاً أحمد">
+<input type="number" id="mdays" placeholder="كم يوم؟ مثلاً 30" value="30">
+<input type="number" id="mprice" placeholder="سعر الاشتراك $ - مثلاً 10" value="10">
+<button class="btn green" onclick="addMember()">+ إضافة مشترك جديد</button>
+<div id="list"></div>
+</div>
+
 <button class="btn black" onclick="location.reload()">🚪 قفل المحفظة</button>
 </div>
+
 <script>
 let bal = Number(localStorage.getItem('wallet_bal') || 0);
-function showBal(){ document.getElementById('bal').innerText = '$ ' + bal; }
+let members = JSON.parse(localStorage.getItem('xforce_members') || '[]');
+function save(){ localStorage.setItem('wallet_bal', bal); localStorage.setItem('xforce_members', JSON.stringify(members)); }
 function go(){
-let v = document.getElementById('pass').value;
-v = v.trim();
-if(v == '0001' || v == '٠٠٠١' || v == '۰001'){
+let v = document.getElementById('pass').value.trim();
+if(v=='0001' || v=='٠٠٠١'){
 document.getElementById('lock').style.display='none';
 document.getElementById('app').style.display='block';
-showBal();
-} else { alert('كلمة السر غلط! اكتب 0001'); }
+render();
+} else { alert('كلمة السر غلط!'); }
 }
-function addM(){ let x = Number(document.getElementById('amt').value); if(!x) return; bal += x; localStorage.setItem('wallet_bal', bal); document.getElementById('amt').value=''; showBal(); }
-function takeM(){ let x = Number(document.getElementById('amt').value); if(!x) return; bal -= x; localStorage.setItem('wallet_bal', bal); document.getElementById('amt').value=''; showBal(); }
+function showBal(){ document.getElementById('bal').innerText = '$ ' + bal; }
+function addM(){ let x=Number(document.getElementById('amt').value); if(!x) return; bal+=x; save(); document.getElementById('amt').value=''; showBal(); }
+function takeM(){ let x=Number(document.getElementById('amt').value); if(!x) return; bal-=x; save(); document.getElementById('amt').value=''; showBal(); }
+function addMember(){
+let n=document.getElementById('mname').value.trim();
+let d=Number(document.getElementById('mdays').value || 30);
+let p=Number(document.getElementById('mprice').value || 0);
+if(!n){ alert('اكتب الاسم!'); return; }
+let end = Date.now() + d*24*60*60*1000;
+members.push({name:n, end:end});
+bal += p; save();
+document.getElementById('mname').value='';
+render();
+}
+function renew(i){
+members[i].end += 30*24*60*60*1000;
+if(members[i].end < Date.now()){ members[i].end = Date.now() + 30*24*60*60*1000; }
+save(); render();
+}
+function delMember(i){
+if(!confirm('تلغي اشتراك '+members[i].name+' ؟')) return;
+members.splice(i,1); save(); render();
+}
+function render(){
 showBal();
-</script>
-</body>
-</html>
+document.getElementById('count').innerText = members.length;
+let h='';
+members.forEach((m,i)=>{
+let left = Math.ceil((m.end - Date.now())/
