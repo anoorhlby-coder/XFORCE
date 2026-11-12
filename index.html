@@ -2,101 +2,26 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>XFORCE Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XFORCE</title>
 <style>
-body{background:#0f1115;color:#fff;font-family:system-ui;padding:15px}
-.card{background:#1a1d24;border-radius:15px;padding:15px;margin:10px 0}
-input{width:100%;padding:12px;margin:5px 0;border-radius:10px;border:0;background:#2a2e38;color:#fff;font-size:16px}
-button{width:100%;padding:12px;border:0;border-radius:10px;font-size:16px;margin:5px 0;font-weight:bold}
-.green{background:#22c55e}.blue{background:#3b82f6;color:#fff}.red{background:#ef4444;color:#fff}.orange{background:#f59e0b}
-.member{background:#22262f;border-radius:12px;padding:12px;margin:8px 0}
-.flex{display:flex;gap:8px}.flex button{flex:1}
-small{color:#aaa}
-</style>
-</head>
-<body>
-<h2>⚡ XFORCE Wallet</h2>
-<div class="card">
-<h3>رصيد المحفظة: <span id="bal">0</span> $</h3>
-<p>المشتركين: <span id="count">0</span> شخص | <span id="sync">⏳...</span></p>
-<input id="addMoney" type="number" placeholder="مبلغ اضافة رصيد">
-<button class="green" onclick="addBal()">+ اضافة رصيد</button>
-</div>
-
-<div class="card">
-<h3>➕ اضافة مشترك</h3>
-<input id="mName" placeholder="اسم المشترك">
-<input id="mPrice" type="number" value="20" placeholder="سعر الاشتراك">
-<input id="mDays" type="number" value="30" placeholder="عدد الايام">
-<button class="blue" onclick="addMember()">اضافة مشترك</button>
-</div>
-<div id="list"></div>
-
-<div class="card">
-<h3>⚙️ اعدادات المزامنة</h3>
-<input id="tokInput" placeholder="الصق التوكن هنا مرة وحدة">
-<button class="orange" onclick="saveToken()">💾 حفظ التوكن بهاد الجهاز</button>
-<small>التوكن بينحفظ بس بتلفونك، ما بينبعت لحدا. اذا غيرت تلفون، افتح هاد الموقع وحط نفس التوكن هون.</small>
-</div>
-
-<script>
-const REPO='anoorhlby-coder/XFORCE';
-let bal=0; let members=[]; let sha=null;
-let token=localStorage.getItem('x_token')||'';
-document.getElementById('tokInput').value=token;
-
-async function load(){
-if(!token){document.getElementById('sync').innerText='حط التوكن تحت';render();return;}
-try{
-let r=await fetch(`https://api.github.com/repos/${REPO}/contents/data.json`,{headers:{Authorization:'token '+token,Accept:'application/vnd.github.v3+json'}});
-if(r.status==404){await saveCloud();return;}
-let j=await r.json(); sha=j.sha;
-let d=JSON.parse(atob(j.content.replace(/\n/g,'')));
-bal=d.bal||0; members=d.members||[];
-document.getElementById('sync').innerText='✅ متزامن مع السحابة';
-}catch(e){document.getElementById('sync').innerText='❌ خطأ بالتوكن او النت';}
-render();
-}
-async function saveCloud(){
-if(!token)return;
-let content=btoa(unescape(encodeURIComponent(JSON.stringify({bal,members}))));
-let body={message:'update',content};
-if(sha)body.sha=sha;
-let r=await fetch(`https://api.github.com/repos/${REPO}/contents/data.json`,{method:'PUT',headers:{Authorization:'token '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
-let j=await r.json(); if(j.content)sha=j.content.sha;
-document.getElementById('sync').innerText='✅ تم الحفظ بالسحابة';
-}
-function save(){render();saveCloud();}
-function render(){
-document.getElementById('bal').innerText=bal;
-document.getElementById('count').innerText=members.length;
-let h='';
-members.forEach((m,i)=>{
-let left=Math.ceil((m.end-Date.now())/86400000);
-let txt=left>0?'باقي '+left+' يوم':'❌ منتهي';
-let date=new Date(m.end).toLocaleDateString('ar');
-h+=`<div class="member"><b>${m.name}</b><br>${txt} - بيخلص: ${date}<div class="flex"><button class="green" onclick="renew(${i})">🔁 تجديد +30 يوم</button><button class="red" onclick="del(${i})">❌ الغاء</button></div></div>`;
-});
-document.getElementById('list').innerHTML=h;
-}
-function addBal(){let v=parseInt(document.getElementById('addMoney').value||0);bal+=v;document.getElementById('addMoney').value='';save();}
-function addMember(){
-let n=document.getElementById('mName').value.trim();
-let p=parseInt(document.getElementById('mPrice').value||20);
-let d=parseInt(document.getElementById('mDays').value||30);
-if(!n)return alert('حط الاسم');
-members.push({name:n,end:Date.now()+d*86400000});
-bal+=p;document.getElementById('mName').value='';save();
-}
-function renew(i){members[i].end+=30*86400000;save();}
-function del(i){if(confirm('متأكد بدك تلغي '+members[i].name+' ؟')){members.splice(i,1);save();}}
-function saveToken(){
-token=document.getElementById('tokInput').value.trim();
-localStorage.setItem('x_token',token);
-alert('تم حفظ التوكن!'); load();
-}
-load();
-</script>
-</body>
-</html>
+*{box-sizing:border-box;font-family:Arial}
+body{background:#000;color:#fff;margin:0;padding:15px}
+.logo{text-align:center;font-size:58px;font-weight:900;letter-spacing:2px;line-height:1}
+.logo span:first-child{color:#ff6a00;text-shadow:0 0 15px #ff6a00,0 0 35px #ff6a00}
+.logo span:last-child{color:#000;-webkit-text-stroke:2px #ff6a00;text-shadow:0 0 20px #ff6a00}
+.sub{text-align:center;color:#ff6a00;letter-spacing:5px;font-size:12px;margin:5px 0 20px}
+.card{background:#111;border:1px solid #ff6a00;border-radius:16px;padding:15px;margin-bottom:15px;box-shadow:0 0 20px #ff6a0033}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#1a1a1a;color:#fff;margin:5px 0;font-size:16px}
+button{border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;font-size:14px}
+.btn-orange{background:#ff6a00;color:#000;width:100%;box-shadow:0 0 15px #ff6a00}
+.btn-dark{background:#222;color:#ff6a00;border:1px solid #ff6a00;width:100%}
+.btn-small{padding:8px 10px;font-size:13px}
+.member{background:#0d0d0d;border:1px solid #ff6a00aa;border-radius:16px;padding:14px;margin-bottom:12px}
+.member h3{margin:0 0 8px;font-size:20px}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800}
+.active{background:#ff6a00;color:#000}
+.ended{background:#333;color:#aaa}
+.row{display:flex;gap:8px;margin-top:10px}
+.row button{flex:1}
+.info{display:flex;justify-content:space-between;margin:6
