@@ -3,80 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XFORCE - إدارة النادي</title>
+<title>محفظة XFORCE</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
 body{background:#fff;color:#000;padding:15px}
-.logo{text-align:center;font-size:55px;font-weight:900;line-height:1}
+.logo{text-align:center;font-size:55px;font-weight:900}
 .logo span{color:#FF6B00}
-.box{border:2px solid #FF6B00;border-radius:18px;padding:16px;margin:14px 0}
-h3{text-align:center}
-.big{text-align:center;font-size:48px;font-weight:900;margin:5px 0}
-input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ddd;border-radius:12px;text-align:center;font-size:16px}
-.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:bold;font-size:17px;margin:5px 0}
+.box{border:2px solid #FF6B00;border-radius:18px;padding:16px;margin:14px 0;text-align:center}
+.big{text-align:center;font-size:50px;font-weight:900}
+input{width:100%;padding:14px;margin:7px 0;border:1px solid #ddd;border-radius:12px;text-align:center;font-size:18px}
+.btn{width:100%;padding:15px;border:none;border-radius:12px;font-weight:bold;font-size:18px;margin:5px 0}
 .orange{background:#FF6B00;color:#fff}
 .black{background:#000;color:#fff}
-.member{background:#f9f9f9;border:1px solid #eee;border-radius:12px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
-.del{background:#ff3333;color:#fff;border:none;padding:8px 12px;border-radius:8px}
-#lock{max-width:400px;margin:60px auto;text-align:center;border:2px solid #FF6B00;border-radius:20px;padding:25px}
 </style>
 </head>
 <body>
-<div id="lock">
+<div id="lock" class="box">
 <div class="logo"><span>X</span>FORCE</div>
-<h3 style="margin:15px 0">🔒 صفحة الإدارة مقفولة</h3>
-<p style="color:#888">اكتب كلمة السر للدخول</p>
-<input type="password" id="pass" placeholder="كلمة السر" inputmode="numeric">
-<button class="btn orange" onclick="checkPass()">دخول</button>
-<p id="err" style="color:red;display:none">كلمة السر غلط!</p>
+<h3 style="margin:12px 0">🔒 محفظة مقفولة</h3>
+<input type="text" id="pass" placeholder="اكتب 0001">
+<button class="btn orange" onclick="go()">دخول</button>
 </div>
 <div id="app" style="display:none">
 <div class="logo"><span>X</span>FORCE</div>
 <div class="box">
-<h3>رصيدك الحالي</h3>
-<div class="big" id="balance">$ 0</div>
-<input type="number" id="amount" placeholder="المبلغ $">
-<button class="btn orange" onclick="addMoney()">+ إضافة</button>
-<button class="btn black" onclick="takeMoney()">- تخريج</button>
+<h3>رصيد المحفظة</h3>
+<div class="big" id="bal">$ 0</div>
+<input type="number" id="amt" placeholder="المبلغ $">
+<button class="btn orange" onclick="addM()">+ إضافة مصاري</button>
+<button class="btn black" onclick="takeM()">- تخريج مصاري</button>
 </div>
-<div class="box">
-<h3>👥 الأعضاء: <span id="count">0</span></h3>
-<input type="text" id="name" placeholder="اسم العضو">
-<select id="days"><option value="30">30 يوم - 20$</option><option value="90">90 يوم - 50$</option><option value="365">365 يوم - 180$</option></select>
-<button class="btn orange" onclick="addMember()">+ إضافة عضو</button>
-<input type="text" id="search" placeholder="🔍 ابحث عن عضو..." oninput="render()">
-<div id="list"></div>
-</div>
-<button class="btn black" onclick="logout()">🚪 تسجيل خروج - قفل</button>
+<button class="btn black" onclick="location.reload()">🚪 قفل المحفظة</button>
 </div>
 <script>
-function checkPass(){
-let p=document.getElementById('pass').value;
-if(p=='0001'){ sessionStorage.setItem('xforce_ok','1'); showApp(); }
-else{ document.getElementById('err').style.display='block'; }
+let bal = Number(localStorage.getItem('wallet_bal') || 0);
+function showBal(){ document.getElementById('bal').innerText = '$ ' + bal; }
+function go(){
+let v = document.getElementById('pass').value;
+v = v.trim();
+if(v == '0001' || v == '٠٠٠١' || v == '۰001'){
+document.getElementById('lock').style.display='none';
+document.getElementById('app').style.display='block';
+showBal();
+} else { alert('كلمة السر غلط! اكتب 0001'); }
 }
-function showApp(){ document.getElementById('lock').style.display='none'; document.getElementById('app').style.display='block'; render(); }
-function logout(){ sessionStorage.removeItem('xforce_ok'); location.reload(); }
-if(sessionStorage.getItem('xforce_ok')=='1'){ showApp(); }
-let balance = localStorage.getItem('xforce_balance') ? Number(localStorage.getItem('xforce_balance')) : 50;
-let members = JSON.parse(localStorage.getItem('xforce_members') || '[]');
-function save(){ localStorage.setItem('xforce_balance', balance); localStorage.setItem('xforce_members', JSON.stringify(members)); render(); }
-function addMoney(){ let v = Number(document.getElementById('amount').value); if(!v) return alert('حط المبلغ'); balance+=v; document.getElementById('amount').value=''; save(); }
-function takeMoney(){ let v = Number(document.getElementById('amount').value); if(!v) return alert('حط المبلغ'); balance-=v; document.getElementById('amount').value=''; save(); }
-function addMember(){
-let n=document.getElementById('name').value.trim(); if(!n) return alert('
-function render(){
-document.getElementById('balance').innerText='$ '+balance;
-document.getElementById('count').innerText=members.length;
-let s=document.getElementById('search').value;
-let html='';
-members.forEach((m,i)=>{
-if(s && !m.name.includes(s)) return;
-html+=`<div class="member"><div><b>${m.name}</b><br><small>${m.days} يوم | ${m.date}</small></div><button class="del" onclick="delMember(${i})">حذف</button></div>`;
-});
-document.getElementById('list').innerHTML=html || '<p style="text-align:center;color:#999;margin:10px">ما في أعضاء</p>';
-}
-if(sessionStorage.getItem('xforce_ok')=='1'){ render(); }
+function addM(){ let x = Number(document.getElementById('amt').value); if(!x) return; bal += x; localStorage.setItem('wallet_bal', bal); document.getElementById('amt').value=''; showBal(); }
+function takeM(){ let x = Number(document.getElementById('amt').value); if(!x) return; bal -= x; localStorage.setItem('wallet_bal', bal); document.getElementById('amt').value=''; showBal(); }
+showBal();
 </script>
 </body>
 </html>
