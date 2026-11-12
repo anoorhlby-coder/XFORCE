@@ -33,3 +33,10 @@ let s=[];try{s=JSON.parse(localStorage.getItem('xforce_members_v3')||'[]')}catch
 function checkPw(){if(document.getElementById('pw').value=='0001'){document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';r()}else{alert('كلمة السر غلط')}}
 function save(){localStorage.setItem('xforce_members_v3',JSON.stringify(s))}
 function r(){document.getElementById('c').textContent=s.length+' مشترك';let t=0;s.forEach(x=>t+=Number(x.money||0));document.getElementById('tot').textContent='الرصيد الكلي: '+t+'$';document.getElementById('sel').innerHTML=s.map((x,i)=>`<option value="${i}">${x.name} - ${x.money}$</option>`).join('');document.getElementById('l').innerHTML
+function a(){let n=document.getElementById('n').value;if(!n)return;let d=new Date();d.setDate(d.getDate()+30);s.push({name:n,money:Number(document.getElementById('m').value||0),end:d.toISOString().slice(0,10)});save();r()}
+function moneyAdd(){let i=document.getElementById('sel').value,v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money+=v;save();r();alert('تمت الإضافة ✅')}
+function moneyOut(){let i=document.getElementById('sel').value,v=Number(document.getElementById('amt').value||0);if(v==0)return;s[i].money-=v;save();r();alert('تم التخريج ✅')}
+function renew(i){let d=new Date(s[i].end);d.setDate(d.getDate()+30);s[i].end=d.toISOString().slice(0,10);save();r()}
+function d(i){if(confirm('حذف؟')){s.splice(i,1);save();r()}}
+function exp(){let b=new Blob([JSON.stringify(s)]);let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='xforce-backup.json';a.click()}
+function imp(e){let f=e.target.files
