@@ -18,9 +18,19 @@ input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ddd;border-r
 .black{background:#000;color:#fff}
 .member{background:#f9f9f9;border:1px solid #eee;border-radius:12px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
 .del{background:#ff3333;color:#fff;border:none;padding:8px 12px;border-radius:8px}
+#lock{max-width:400px;margin:60px auto;text-align:center;border:2px solid #FF6B00;border-radius:20px;padding:25px}
 </style>
 </head>
 <body>
+<div id="lock">
+<div class="logo"><span>X</span>FORCE</div>
+<h3 style="margin:15px 0">🔒 صفحة الإدارة مقفولة</h3>
+<p style="color:#888">اكتب كلمة السر للدخول</p>
+<input type="password" id="pass" placeholder="كلمة السر" inputmode="numeric">
+<button class="btn orange" onclick="checkPass()">دخول</button>
+<p id="err" style="color:red;display:none">كلمة السر غلط!</p>
+</div>
+<div id="app" style="display:none">
 <div class="logo"><span>X</span>FORCE</div>
 <div class="box">
 <h3>رصيدك الحالي</h3>
@@ -37,34 +47,21 @@ input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ddd;border-r
 <input type="text" id="search" placeholder="🔍 ابحث عن عضو..." oninput="render()">
 <div id="list"></div>
 </div>
+<button class="btn black" onclick="logout()">🚪 تسجيل خروج - قفل</button>
+</div>
 <script>
+function checkPass(){
+let p=document.getElementById('pass').value;
+if(p=='0001'){ sessionStorage.setItem('xforce_ok','1'); showApp(); }
+else{ document.getElementById('err').style.display='block'; }
+}
+function showApp(){ document.getElementById('lock').style.display='none'; document.getElementById('app').style.display='block'; render(); }
+function logout(){ sessionStorage.removeItem('xforce_ok'); location.reload(); }
+if(sessionStorage.getItem('xforce_ok')=='1'){ showApp(); }
 let balance = localStorage.getItem('xforce_balance') ? Number(localStorage.getItem('xforce_balance')) : 50;
 let members = JSON.parse(localStorage.getItem('xforce_members') || '[]');
 function save(){ localStorage.setItem('xforce_balance', balance); localStorage.setItem('xforce_members', JSON.stringify(members)); render(); }
 function addMoney(){ let v = Number(document.getElementById('amount').value); if(!v) return alert('حط المبلغ'); balance+=v; document.getElementById('amount').value=''; save(); }
 function takeMoney(){ let v = Number(document.getElementById('amount').value); if(!v) return alert('حط المبلغ'); balance-=v; document.getElementById('amount').value=''; save(); }
 function addMember(){
-let n=document.getElementById('name').value.trim(); if(!n) return alert('حط اسم العضو');
-let d=Number(document.getElementById('days').value);
-let price = d==30?20:d==90?50:180;
-members.push({name:n, days:d, date:new Date().toLocaleDateString('ar-SY')});
-balance+=price;
-document.getElementById('name').value='';
-save(); alert('تمت إضافة '+n+' ✅');
-}
-function delMember(i){ if(confirm('متأكد بدك تحذف؟')){ members.splice(i,1); save(); } }
-  function render(){
-document.getElementById('balance').innerText='$ '+balance;
-document.getElementById('count').innerText=members.length;
-let s=document.getElementById('search').value;
-let html='';
-members.forEach((m,i)=>{
-if(s && !m.name.includes(s)) return;
-html+=`<div class="member"><div><b>${m.name}</b><br><small>${m.days} يوم | ${m.date}</small></div><button class="del" onclick="delMember(${i})">حذف</button></div>`;
-});
-document.getElementById('list').innerHTML=html || '<p style="text-align:center;color:#999;margin:10px">ما في أعضاء</p>';
-}
-render();
-</script>
-</body>
-</html>
+let n=document.getElementById('name').value.trim(); if(!n) return alert('
