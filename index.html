@@ -12,7 +12,6 @@ input{width:92%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #3
 button{width:100%;padding:13px;border:0;border-radius:10px;background:#ff6a00;color:#fff;font-size:17px;font-weight:bold;margin:6px 0}
 button.gray{background:#333}
 .member{background:#1a1a1a;border-radius:10px;padding:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
-#status{color:#ffb400;font-size:14px}
 </style>
 </head>
 <body>
@@ -22,23 +21,19 @@ button.gray{background:#333}
 <input id="name" placeholder="اسم المشترك">
 <input id="money" type="number" placeholder="الرصيد بالدولار $">
 <button onclick="addMember()">+ إضافة مشترك - 30 يوم</button>
-<div id="status">وضع محلي - جاهز ✅</div>
+<div id="status">جاهز ✅ - الحفظ محلي</div>
 </div>
 <div id="list"></div>
 <div class="card">
-<b>☁️ ربط السحابة (اختياري)</b>
-<input id="token" placeholder="الصق التوكن هنا" type="password">
-<button onclick="saveToken()">حفظ و اتصال</button>
-<button class="gray" onclick="clearToken()">حذف التوكن</button>
 <button class="gray" onclick="exportData()">📥 تصدير نسخة احتياطية</button>
 <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
 <button class="gray" onclick="document.getElementById('fileInput').click()">📤 استيراد نسخة احتياطية</button>
+<button class="gray" onclick="clearAll()">🗑️ حذف الكل</button>
 </div>
 <script>
-let members = JSON.parse(localStorage.getItem('xforce_members')||'[]');
-let token = localStorage.getItem('xforce_token')||'';
-document.getElementById('token').value = token;
-function saveLocal(){ localStorage.setItem('xforce_members', JSON.stringify(members)); }
+let members = [];
+try{ members = JSON.parse(localStorage.getItem('xforce_members_v3')||'[]'); }catch(e){ members=[]; }
+function saveLocal(){ localStorage.setItem('xforce_members_v3', JSON.stringify(members)); }
 function render(){
   document.getElementById('count').textContent = members.length + ' مشترك';
   document.getElementById('list').innerHTML = members.map((m,i)=>`<div class="member"><span><b>${m.name}</b><br>💰 ${m.money}$ - ينتهي ${m.end}</span><button style="width:auto;background:#c00" onclick="delMember(${i})">حذف</button></div>`).join('') || '<p>لا يوجد مشتركين</p>';
@@ -49,41 +44,21 @@ function addMember(){
   if(!n){alert('اكتب الاسم');return;}
   let d=new Date(); d.setDate(d.getDate()+30);
   members.push({name:n, money:mo, end:d.toISOString().slice(0,10)});
-  saveLocal(); render(); syncCloud();
+  saveLocal(); render();
+  document.getElementById('status').textContent = 'تمت الإضافة ✅ - ' + members.length + ' مشترك';
   document.getElementById('name').value=''; document.getElementById('money').value='';
 }
-function delMember(i){ if(confirm('حذف؟')){ members.splice(i,1); saveLocal(); render(); syncCloud(); } }
-function setStatus(t){ document.getElementById('status').textContent=t; }
-function saveToken(){
-  token=document.getElementById('token').value.trim();
-  localStorage.setItem('xforce_token', token);
-  setStatus('تم حفظ التوكن ✅ - جاري تجربة الاتصال...');
-  // لا ننتظر السحابة، الواجهة تضل شغالة
-  syncCloud();
-  setTimeout(()=>{ if(document.getElementById('status').textContent.includes('جاري')) setStatus('تم الحفظ محلياً ✅ - السحابة اختيارية'); },3000);
-}
-function clearToken(){
-  token=''; localStorage.removeItem('xforce_token');
-  document.getElementById('token').value='';
-  setStatus('تم حذف التوكن ✅ - وضع محلي');
-}
-async function syncCloud(){
-  if(!token) return;
-  setStatus('☁️ جاري المزامنة...');
-  try{
-    let c=new AbortController(); setTimeout(()=>c.abort(),4000);
-    let r=await fetch('https://api.github.com/repos/anoorhlby-coder/XFORCE/contents/data.json',{headers:{Authorization:'Bearer '+token}, signal:c.signal});
-    let sha=null, cloud=[];
-    if(r.ok){ let j=await r.json(); sha=j.sha; try{ cloud=JSON.parse(atob(j.content.replace(/\n/g,''))); }catch(e){} }
-    // لا نمسح المحلي اذا السحابة فاضية
-    if(cloud.length>0 && cloud.length>=members.length){ members=cloud; saveLocal(); render(); }
-    // رفع المحلي
-    let content=btoa(unescape(encodeURIComponent(JSON.stringify(members))));
-    let body={message:'update', content:content, branch:'main'}; if(sha) body.sha=sha;
-    let c2=new AbortController(); setTimeout(()=>c2.abort(),4000);
-    let r2=await fetch('https://api.github.com/repos/anoorhlby-coder/XFORCE/contents/data.json',{method:'PUT', headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify(body), signal:c2.signal});
-    setStatus(r2.ok?'✅ متصل بالسحابة':'تم الحفظ محلياً ✅ - التوكن غلط او بدون صلاحية');
-  }catch(e){ setStatus('تم الحفظ محلياً ✅ - تعذر الاتصال بالسحابة'); }
-}
+function delMember(i){ if(confirm('حذف؟')){ members.splice(i,1); saveLocal(); render(); } }
+function clearAll(){ if(confirm('حذف الكل؟')){ members=[]; saveLocal(); render(); } }
 function exportData(){
-  let b
+  let b=new Blob([JSON.stringify(members)],{type:'application/json'});
+  let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='xforce-backup.json'; a.click();
+}
+function importData(e){
+  let f=e.target.files[0]; if(!f) return;
+  let r=new FileReader(); r.onload=()=>{ try{ members=JSON.parse(r.result); saveLocal(); render(); alert('تم الاستيراد ✅'); }catch(e){alert('ملف غلط');} }; r.readAsText(f);
+}
+render();
+</script>
+</body>
+</html>
