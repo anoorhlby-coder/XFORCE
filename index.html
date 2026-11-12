@@ -21,12 +21,6 @@ input,select{width:90%;padding:12px;margin:6px;background:#222;color:#fff;border
 <div class="card"><input id="n" placeholder="اسم المشترك"><input id="m" type="number" placeholder="الرصيد $"><button onclick="a()">+ إضافة مشترك - 30 يوم</button></div>
 <div id="l"></div>
 <div class="card"><button onclick="exp()">📥 تصدير نسخة احتياطية</button><input type="file" id="f" style="display:none" onchange="imp(event)"><button style="background:#222;box-shadow:none" onclick="document.getElementById('f').click
-<h1>XFORCE</h1>
-<div class="card"><div id="c"></div><div id="tot" style="font-size:22px;color:#0f0"></div></div>
-<div class="card"><b>💰 إدارة المصاري لحالها</b><select id="sel"></select><input id="amt" type="number" placeholder="المبلغ $"><button style="background:#00c853" onclick="moneyAdd()">+ إضافة مصاري</button><button style="background:#d50000" onclick="moneyOut()">- تخريج مصاري</button></div>
-<div class="card"><input id="n" placeholder="اسم المشترك"><input id="m" type="number" placeholder="الرصيد $"><button onclick="a()">+ إضافة مشترك - 30 يوم</button></div>
-<div id="l"></div>
-<div class="card"><button onclick="exp()">📥 تصدير نسخة احتياطية</button><input type="file" id="f" style="display:none" onchange="imp(event)"><button style="background:#222;box-shadow:none" onclick="document.getElementById('f').click()">📤 استيراد نسخة احتياطية</button></div>
 </div>
 <script>
 let s=[];try{s=JSON.parse(localStorage.getItem('xforce_members_v3')||'[]')}catch(e){}
