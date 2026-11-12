@@ -1,2 +1,70 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>XFORCE</title><style>body{margin:0;font-family:sans-serif;background:#fff;text-align:center} .logo{font-size:55px;font-weight:900;padding-top:20px}.logo span{color:#ff6a00}.card{border:2px solid #ff6a00;border-radius:20px;padding:20px;margin:15px}.balance{font-size:38px;font-weight:900}input,select{width:90%;padding:13px;border:2px solid #eee;border-radius:12px;font-size:17px;text-align:center;margin:6px 0}.btn{width:100%;padding:13px;border:none;border-radius:12px;font-size:17px;font-weight:800;margin-top:8px}.add{background:#ff6a00;color:#fff}.out{background:#111;color:#fff}.member{border:1px solid #eee;border-radius:16px;padding:14px;margin:10px 15px;text-align:right}.sb{padding:8px 14px;border:none;border-radius:10px;font-weight:800}.rn{background:#ff6a00;color:#fff}.cn{background:#111;color:#fff}.hist{text-align:right;padding:0 20px}.item{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0}</style></head><body><div id="lock"><div class="logo"><span>X</span><b>FORCE</b></div><div class="card"><h3>🔒 الموقع مقفول</h3><input id="pass" type="password" placeholder="كلمة السر"><button class="btn add" onclick="checkPass()">دخول</button><p id="err" style="color:red"></p></div></div>
-<div id="app" style="display:none"><div class="logo"><span>X</span><b>FORCE</b></div><div class="card"><div>رصيدك الحالي</div><div class="balance"><span id="bal">0</span> $</div><input id="amount" type="number" placeholder="المبلغ $"><button class="btn add" onclick="addMoney()">+ إضافة</button><button class="btn out" onclick="outMoney()">- تخريج</button></div><div class="card"><h3>👥 الأعضاء: <span id="count">0</span></h3><input id="mName" placeholder="اسم العضو"><select id="mDays"><option value="30">30 يوم</option><option value="15">15 يوم</option><option value="7">7 أيام</option></select><button class="btn add" onclick="addMember()">+ إضافة عضو</button></div><div id="members"></div><div class="hist"><h3>آخر الحركات</h3><div id="list"></div></div></div><script>function checkPass(){let p=document.getElementById('pass').value;if(p=='0001'){sessionStorage.setItem('x_pass','ok');showApp()}else{document.getElementById('err').innerText='كلمة السر غلط'}}function showApp(){document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';render()}if(sessionStorage.getItem('x_pass')=='ok'){showApp()}let bal=Number(localStorage.getItem('x_bal')||0);let hist=JSON.parse(localStorage.getItem('x_hist')||'[]');let members=JSON.parse(localStorage.getItem('x_members')||'[]');function save(){localStorage.setItem('x_bal',bal);localStorage.setItem('x_hist',JSON.stringify(hist));localStorage.setItem('x_members',JSON.stringify(members));render()}function render(){document.getElementById('bal').innerText=bal;document.getElementById('count').innerText=members.length;document.getElementById('list').innerHTML=hist.slice().reverse().map(h=>`<div class="item"><span>${h.type}</span><b>${h.type=='إضافة'?'+':'-'} ${h.amt} $</b></div>`).join('');document.getElementById('members').innerHTML=members.map((x,i)=>{let left=Math.ceil((x.end-Date.now())/86400000);return `<div class="member"><b>${x.name}</b> - باقي ${left} يوم<br><button class="sb rn" onclick="renew(${i})">🔄 تجديد</button><button class="sb cn" onclick="delMember(${i})">❌ الغاء</button></div>`}).join('')}function addMoney(){let v=Number(document.getElementById('amount').value);if(!v)return;bal+=v;hist.push({type:'إضافة',amt:v});save();document.getElementById('amount').value=''}function outMoney(){let v=Number(document.getElementById('amount').value);if(!v)return;bal-=v;hist.push({type:'تخريج',amt:v});save();document.getElementById('amount').value=''}function addMember(){let n=document.getElementById('mName').value.trim();let d=Number(document.getElementById('mDays').value);if(!n)return;members.push({name:n,end:Date.now()+d*86400000});document.getElementById('mName').value='';save()}function renew(i){members[i].end+=30*86400000;save()}function delMember(i){members.splice(i,1);save()}</script></body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XFORCE - إدارة النادي</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#fff;color:#000;padding:15px}
+.logo{text-align:center;font-size:55px;font-weight:900;line-height:1}
+.logo span{color:#FF6B00}
+.box{border:2px solid #FF6B00;border-radius:18px;padding:16px;margin:14px 0}
+h3{text-align:center}
+.big{text-align:center;font-size:48px;font-weight:900;margin:5px 0}
+input,select{width:100%;padding:13px;margin:6px 0;border:1px solid #ddd;border-radius:12px;text-align:center;font-size:16px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:bold;font-size:17px;margin:5px 0}
+.orange{background:#FF6B00;color:#fff}
+.black{background:#000;color:#fff}
+.member{background:#f9f9f9;border:1px solid #eee;border-radius:12px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
+.del{background:#ff3333;color:#fff;border:none;padding:8px 12px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="logo"><span>X</span>FORCE</div>
+<div class="box">
+<h3>رصيدك الحالي</h3>
+<div class="big" id="balance">$ 0</div>
+<input type="number" id="amount" placeholder="المبلغ $">
+<button class="btn orange" onclick="addMoney()">+ إضافة</button>
+<button class="btn black" onclick="takeMoney()">- تخريج</button>
+</div>
+<div class="box">
+<h3>👥 الأعضاء: <span id="count">0</span></h3>
+<input type="text" id="name" placeholder="اسم العضو">
+<select id="days"><option value="30">30 يوم - 20$</option><option value="90">90 يوم - 50$</option><option value="365">365 يوم - 180$</option></select>
+<button class="btn orange" onclick="addMember()">+ إضافة عضو</button>
+<input type="text" id="search" placeholder="🔍 ابحث عن عضو..." oninput="render()">
+<div id="list"></div>
+</div>
+<script>
+let balance = localStorage.getItem('xforce_balance') ? Number(localStorage.getItem('xforce_balance')) : 50;
+let members = JSON.parse(localStorage.getItem('xforce_members') || '[]');
+function save(){ localStorage.setItem('xforce_balance', balance); localStorage.setItem('xforce_members', JSON.stringify(members)); render(); }
+function addMoney(){ let v = Number(document.getElementById('amount').value); if(!v) return alert('حط المبلغ'); balance+=v; document.getElementById('amount').value=''; save(); }
+function takeMoney(){ let v = Number(document.getElementById('amount').value); if(!v) return alert('حط المبلغ'); balance-=v; document.getElementById('amount').value=''; save(); }
+function addMember(){
+let n=document.getElementById('name').value.trim(); if(!n) return alert('حط اسم العضو');
+let d=Number(document.getElementById('days').value);
+let price = d==30?20:d==90?50:180;
+members.push({name:n, days:d, date:new Date().toLocaleDateString('ar-SY')});
+balance+=price;
+document.getElementById('name').value='';
+save(); alert('تمت إضافة '+n+' ✅');
+}
+function delMember(i){ if(confirm('متأكد بدك تحذف؟')){ members.splice(i,1); save(); } }
+  function render(){
+document.getElementById('balance').innerText='$ '+balance;
+document.getElementById('count').innerText=members.length;
+let s=document.getElementById('search').value;
+let html='';
+members.forEach((m,i)=>{
+if(s && !m.name.includes(s)) return;
+html+=`<div class="member"><div><b>${m.name}</b><br><small>${m.days} يوم | ${m.date}</small></div><button class="del" onclick="delMember(${i})">حذف</button></div>`;
+});
+document.getElementById('list').innerHTML=html || '<p style="text-align:center;color:#999;margin:10px">ما في أعضاء</p>';
+}
+render();
+</script>
+</body>
+</html>
